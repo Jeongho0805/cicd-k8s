@@ -1,7 +1,7 @@
 image:
   repository: parkjeongho/ci-cd-app
   pullPolicy: IfNotPresent
-  tag: "20250629060329"
+  tag: "20250629060952"
 
 replicaCount: 1
 
