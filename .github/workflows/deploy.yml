@@ -40,14 +40,22 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/ci-cd-app:$IMAGE_TAG .
           docker push ${{ secrets.DOCKER_USERNAME }}/ci-cd-app:$IMAGE_TAG
 
-      - name: Update Helm values.yaml with new image tag
+      - name: Clone Argo CD deploy repo
         run: |
-          sed -i "s/tag: .*/tag: \"$IMAGE_TAG\"/" helm/values.yaml
+          git clone https://x-access-token:${{ secrets.DEPLOY_REPO_TOKEN}}@github.com/Jeongho0805/cicd-k8s-deploy.git deploy
+          cd deploy
+          git checkout main
 
-      - name: Commit and push updated values.yaml
+      - name: Update image tag in deploy repo
         run: |
+          cd deploy
+          sed -i "s/tag: .*/tag: \"$IMAGE_TAG\"/" overlays/stage/values.yaml
+
+      - name: Commit and push to deploy repo
+        run: |
+          cd deploy
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add helm/values.yaml
-          git commit -m "ci: update image tag to $IMAGE_TAG [skip ci]"
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:stage
+          git add overlays/stage/values.yaml
+          git commit -m "ci(stage): update image tag to $IMAGE_TAG"
+          git push origin main
